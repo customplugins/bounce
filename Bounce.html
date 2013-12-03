@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bounce</title>
+<script type="text/javascript" src="Bounce/helpers.js"></script>
+<script type="text/javascript" src="Bounce/classes.js"></script>
+<script type="text/javascript">
+
+window.addEventListener('load', function() {
+	window.theCanvas = $("canvas");
+	window.cxt = theCanvas.getContext("2d");
+
+	window.mapCanvas = $("mapCanvas");
+	window.mCxt = mapCanvas.getContext("2d");
+
+	window.Bouce = new BounceGame();
+}, false);
+
+function BounceGame() {
+	
+	var _this = this;
+
+	this.objects = [];
+
+	this.RIGHT_PRESSED = false,
+	this.RIGHT_RELEASE = false,
+	this.LEFT_PRESSED  = false,
+	this.LEFT_RELEASE  = false,
+	this.JUMP_PRESSED  = false,
+	this.IN_JUMP       = false;
+
+	this.animate = function() {
+		this.update();
+		this.draw();
+		setTimeout(function() {
+			_this.animate();
+		},1000/60)
+	}
+
+	this.update = function() {
+		this.ball.update();
+	}
+
+	this.draw = function() {
+		this.clearCanvas();
+		this.ball.draw();
+	}
+
+	this.clearCanvas = function() {
+		cxt.save();
+		cxt.clearRect(0,0,theCanvas.width, theCanvas.height)
+		cxt.restore();
+	}
+
+	this.initLevelObjects = function() {
+		this.objects = [
+			new Box(320,240,80,60),
+			new Box(440,180,20,120),
+			new Box(20,260,40,40)
+		];
+	}
+
+	this.drawLevel = function() {
+		mCxt.clearRect(0,0,theCanvas.width, theCanvas.height)
+
+		for(var i in this.objects) {
+			this.objects[i].draw();
+		}
+	}
+
+	//Initialize game
+	window.addEventListener('keydown',function(e) {
+		switch( e.keyCode ) {
+			case 39: //RIGHT
+				_this.RIGHT_PRESSED = true;
+				_this.RIGHT_RELEASE = false;
+				break;
+			case 37: //LEFT
+				_this.LEFT_PRESSED = true;
+				_this.LEFT_RELEASE = false;
+				break;
+			case 38: //SPACE | Jump
+				_this.JUMP_PRESSED = true;
+				break;
+				
+		}
+	});
+	
+	window.addEventListener('keyup',function(e) {
+		switch( e.keyCode ) {
+			case 39: //RIGHT
+				_this.RIGHT_PRESSED = false;
+				_this.RIGHT_RELEASE = true;
+				break;
+			case 37: //LEFT
+				_this.LEFT_PRESSED = false;
+				_this.LEFT_RELEASE = true;
+				break;
+			case 38: //UP | Jump
+				_this.JUMP_PRESSED = false;
+				break;
+		}
+	});
+
+	this.initLevelObjects();
+	this.drawLevel();
+	this.ball = new BounceBall(125,288,12,this);
+	this.animate();
+	
+}
+</script>
+</head>
+<body style="background:#111">
+
+<canvas id="canvas" width="500" height="300" style="background:none;z-index:2;position: absolute; top: 0px; left: 0px;" ></canvas>
+<canvas id="mapCanvas" width="500" height="300" style="background:#ddd;z-index:1;position: absolute; top: 0px; left: 0px;"></canvas>
+</body>
+</htmlq
