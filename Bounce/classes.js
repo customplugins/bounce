@@ -63,21 +63,23 @@ BounceBall.prototype.update = function() {
 
 	if (this.app.LEFT_PRESSED || this.app.RIGHT_PRESSED) {
 		if (this.app.LEFT_PRESSED) {
-			this.velocity.x = -6;
+			this.velocity.x = (this.app.IN_JUMP) ? -4 : -6;;
 		}
 		else if (this.app.RIGHT_PRESSED) {
-			this.velocity.x = 6;
+			this.velocity.x = (this.app.IN_JUMP) ? 4 : 6;
 		}
 	}
 
 	if (this.app.RIGHT_RELEASE) {
 		this.app.RIGHT_RELEASE = false;
-		this.acceleration.x = (this.app.IN_JUMP) ? -0.2 : -0.5;
+		//this.acceleration.x = (this.app.IN_JUMP) ? -0.2 : -0.5;
+		this.velocity.x = 0;
 	}
 	
 	if (this.app.LEFT_RELEASE) {
 		this.app.LEFT_RELEASE = false;
-		this.acceleration.x = (this.app.IN_JUMP) ? 0.2 : 2;
+		//this.acceleration.x = (this.app.IN_JUMP) ? 0.2 : 2;
+		this.velocity.x = 0;
 	}
 	
 	//Make a jump if button pressed and ball not already in the air
@@ -87,21 +89,32 @@ BounceBall.prototype.update = function() {
 		this.app.IN_JUMP = true;
 	}
 
+	if( this.ground && (this.position.x + this.radius < this.ground.x ||
+		this.position.x - this.radius > this.ground.x + this.ground.width)
+		) {
+		this.acceleration.y = 0.5;
+		this.app.IN_JUMP = true;	
+	}
+
 	
 	this.velocity.add(this.acceleration);
 	this.position.add(this.velocity);
 
-	if (this.position.y >= 288) {
-		this.position.y = 288;
-		this.acceleration.y = 0;
-		this.velocity.y = 0;
-		this.app.IN_JUMP = false;
+	if (this.app.IN_JUMP && this.velocity.y > 0) { 
+		var box;
+		for(var i in this.app.objects) {
+			box = this.app.objects[i];
+			if( box.checkCollision(this) ) {
+				this.position.y = box.y - this.radius;
+				this.acceleration.y = 0;
+				this.velocity.y = 0;
+				this.app.IN_JUMP = false;
+				this.ground = box;
+				break;
+			}
+		}
 	}
 	
-	if( this.velocity.x < 0.2 && this.velocity.x > - 0.2 ) {
-		this.acceleration.x = 0;
-		this.velocity.x = 0;
-	}
 	
 }
 
@@ -112,8 +125,23 @@ Box = function(x,y,width,height) {
 	this.height = height;
 }
 Box.prototype.draw = function(){
-	mCxt.save();		
+	mCxt.save();
 	mCxt.fillStyle = '#555';
 	mCxt.fillRect(this.x,this.y,this.width,this.height);
 	mCxt.restore();
 }
+
+Box.prototype.checkCollision = function(Ball) {
+
+	if(Ball.position.x >= this.x && Ball.position.x <= this.x + this.width) {
+		if( Ball.position.y  >= this.y &&
+			Ball.position.y <  this.y + this.height
+			) {
+			return true;
+		}
+	}			
+	return false;
+}
+
+
+
