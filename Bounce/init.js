@@ -1,16 +1,7 @@
 
 window.addEventListener('load', function() {
-	window.theCanvas = $("canvas");
-	theCanvas.width = 500;
-	theCanvas.height = 300;
-	window.cxt = theCanvas.getContext("2d");
-
-	window.mapCanvas = $("mapCanvas");
-	mapCanvas.width = 500;
-	mapCanvas.height = 300;
-	window.mCxt = mapCanvas.getContext("2d");
-
 	window.Bounce = new BounceGame();
+	Bounce.init();
 }, false);
 
 //GLOBALS
@@ -23,21 +14,36 @@ var RIGHT_PRESSED = false,
 function BounceGame() {	
 	var _this = this;
 
+	this.width = 800;
+	this.height = 300;
+
 	/**
 	 * Level Objects
 	 */
 	this.objects = [];
 
 	this.animate = function() {
-		this.update();
-		this.draw();
-		setTimeout(function() {
-			_this.animate();
-		},1000/60)
+		_this.update();
+		_this.draw();
+		requestAnimationFrame(window.Bounce.animate)
 	}
 
 	this.update = function() {
-		this.ball.update();
+		this.ball.update(); 
+
+		//Update Viewport
+		this.updateViewport();
+	}
+
+	this.updateViewport = function() {
+		var offset = 250 - this.ball.position.x;
+		if(offset > 0 )
+			offset = 0;
+
+		if(offset < -800)
+			offset = -800;
+
+		$('level').style.marginLeft = offset + 'px';
 	}
 
 	this.draw = function() {
@@ -46,23 +52,32 @@ function BounceGame() {
 	}
 
 	this.clearCanvas = function() {
-		cxt.save();
-		cxt.clearRect(0,0,theCanvas.width, theCanvas.height)
-		cxt.restore();
+		cxt.clearRect(0, 0, this.width, this.height);
 	}
 
 	this.initLevelObjects = function() {
 		this.objects = [
 			new Box(320,230,80,60),
-			new Box(320,100,80,20),
-			new Box(440,170,20,120),
-			new Box(20,250,40,40),
-			new Box(0,290,500,10)
+			new Box(320,110,80,20),
+			new Box(230,70,80,20),
+			new Box(360,50,180,20),
+			
+			new Box(520,70,20,100),
+
+			new Box(440,170,100,20),
+
+			new Box(440,190,20,70),
+			//	new Box(530,220,140,20),
+			
+			new Box(0,0,800,10,true),
+			new Box(0,290,800,10,true),
+			new Box(0,10,10,280,true),
+			new Box(790,10,10,280,true),
 		];
 	}
 
 	this.drawLevel = function() {
-		mCxt.clearRect(0, 0, theCanvas.width, theCanvas.height);
+		mCxt.clearRect(0, 0, this.width, this.height);
 		for (var i in this.objects) {
 			this.objects[i].draw();
 		}
@@ -102,13 +117,22 @@ function BounceGame() {
 		}
 	});
 
-	this.initLevelObjects();
-	this.drawLevel();
+	this.init = function() {
+		var theCanvas = $("canvas");
+		theCanvas.width = 800;
+		theCanvas.height = 300;
+		window.cxt = theCanvas.getContext("2d");
 
-	this.ball = new BounceBall(125,218,12,this);
-	this.ball.inJump = true;
-	this.ball.acceleration.y = 0.5;
+		var mapCanvas = $("mapCanvas");
+		mapCanvas.width = 800;
+		mapCanvas.height = 300;
+		window.mCxt = mapCanvas.getContext("2d");
 
-	this.animate();
-	
+		this.initLevelObjects();
+		this.drawLevel();
+
+		this.ball = new BounceBall(125,218,12,this);
+
+		this.animate();		
+	}
 }
