@@ -9,28 +9,26 @@
 			padding: 0;
 		}
 
-		canvas {
-			width: 800px;
-			height: 300px;
-			
+		canvas {	
 			background:none;
 			z-index:2;
 			position: relative;
 			top: 0px; 
 			left: 0px;
+			float: left;
 		}
 
 		#mapCanvas {
-			background: #ddd;
+			background: #abdfed;
 			z-index:1;
-			top: -305px;
+		}
+		#ringsCanvas {
+			z-index: 3;
 		}
 
 		#viewport {
 			position: relative;
 			overflow: hidden;
-			width: 500px;
-			height: 300px;
 		}
 		#level {
 			position: absolute;
@@ -41,6 +39,7 @@
 	<script type="text/javascript" src="Bounce/classes/Vector.js"></script>
 	<script type="text/javascript" src="Bounce/classes/BounceBall.js"></script>
 	<script type="text/javascript" src="Bounce/classes/Box.js"></script>
+	<script type="text/javascript" src="Bounce/levels.js"></script>
 	<script type="text/javascript" src="Bounce/init.js"></script>
 </head>
 <body style="background:#111">
@@ -48,6 +47,7 @@
 		<div id="level">
 			<canvas id="canvas"></canvas>
 			<canvas id="mapCanvas"></canvas>
+			<canvas id="ringsCanvas"></canvas>
 		</div>
 	</div>
 </body>

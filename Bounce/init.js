@@ -9,13 +9,16 @@ var RIGHT_PRESSED = false,
 	RIGHT_RELEASE = false,
 	LEFT_PRESSED  = false,
 	LEFT_RELEASE  = false,
-	JUMP_PRESSED  = false;
+	JUMP_PRESSED  = false,
+	MOUSE;
 
 function BounceGame() {	
 	var _this = this;
 
-	this.width = 800;
-	this.height = 300;
+	this.width = 1600;
+	this.height = 600;
+	this.viewportWidth = 500;
+	this.viewportHeight = 300;
 
 	/**
 	 * Level Objects
@@ -36,19 +39,37 @@ function BounceGame() {
 	}
 
 	this.updateViewport = function() {
-		var offset = 250 - this.ball.position.x;
-		if(offset > 0 )
+		var offset = this.viewportWidth / 2 - this.ball.position.x;
+		if( offset > 0 )
 			offset = 0;
 
-		if(offset < -800)
-			offset = -800;
+		if( offset < -(this.width - this.viewportWidth) )
+			offset = -(this.width - this.viewportWidth);
 
-		$('level').style.marginLeft = offset + 'px';
+	//	offset = -700;
+
+		this.levelOffset = offset;
+
+		var levelStyle = $('level').style;
+		levelStyle.marginLeft = offset + 'px';
+
+		if( true || false ) {
+			if(this.ball.position.y > 295) {
+				levelStyle.marginTop = -300 + 'px';
+			} else {
+				levelStyle.marginTop = 0 + 'px';
+			}
+		}
 	}
 
 	this.draw = function() {
 		this.clearCanvas();
 		this.ball.draw();
+		if( MOUSE) {
+			cxt.save();
+			cxt.fillText( 'x: '+ (MOUSE.x + -this.levelOffset) + ', y: '+ MOUSE.y,  (MOUSE.x + -this.levelOffset) + 10, MOUSE.y);
+			cxt.restore();
+		}
 	}
 
 	this.clearCanvas = function() {
@@ -56,34 +77,48 @@ function BounceGame() {
 	}
 
 	this.initLevelObjects = function() {
-		this.objects = [
-			new Box(320,230,80,60),
-			new Box(320,110,80,20),
-			new Box(230,70,80,20),
-			new Box(360,50,180,20),
-			
-			new Box(520,70,20,100),
+		
+		this.objects = getLevelObjects(this);
 
-			new Box(440,170,100,20),
+		this.spikes = [
+			new Spike(500,285)
+		];
 
-			new Box(440,190,20,70),
-			//	new Box(530,220,140,20),
-			
-			new Box(0,0,800,10,true),
-			new Box(0,290,800,10,true),
-			new Box(0,10,10,280,true),
-			new Box(790,10,10,280,true),
+		this.rings = [
+			new Ring(225,240),
+			new Ring(1140,90)
 		];
 	}
 
 	this.drawLevel = function() {
 		mCxt.clearRect(0, 0, this.width, this.height);
+		
+		var showGrid = 0;
+		if( showGrid ) {
+			mCxt.save();
+			for( var y = 15; y < this.height; y += 30 ) {
+				mCxt.moveTo(0, y);
+				mCxt.lineTo(this.width, y);
+			}
+			for( var x = 15; x < this.width; x += 30 ) {
+				mCxt.moveTo(x, 0);
+				mCxt.lineTo(x, this.height)			
+			}
+			mCxt.stroke();
+			mCxt.restore();
+		}
+
 		for (var i in this.objects) {
 			this.objects[i].draw();
 		}
+		for (var i in this.spikes) {
+			this.spikes[i].draw();
+		}
+		for (var i in this.rings) {
+			this.rings[i].draw();
+		}
 	}
 
-	//Initialize game
 	window.addEventListener('keydown',function(e) {
 		switch( e.keyCode ) {
 			case 39: //RIGHT
@@ -117,21 +152,41 @@ function BounceGame() {
 		}
 	});
 
+	window.addEventListener('mousemove',function(e) {
+		MOUSE = {
+			x: e.clientX,
+			y: e.clientY
+		}
+	});
+
 	this.init = function() {
+
 		var theCanvas = $("canvas");
-		theCanvas.width = 800;
-		theCanvas.height = 300;
+		theCanvas.width = this.width;
+		theCanvas.height = this.height;
 		window.cxt = theCanvas.getContext("2d");
 
 		var mapCanvas = $("mapCanvas");
-		mapCanvas.width = 800;
-		mapCanvas.height = 300;
+		mapCanvas.width = this.width;
+		mapCanvas.height = this.height;
+		mapCanvas.style.top = '-' + this.height + 'px';
 		window.mCxt = mapCanvas.getContext("2d");
+
+
+		var ringsCanvas = $("ringsCanvas");
+		ringsCanvas.width = this.width;
+		ringsCanvas.height = this.height;
+		ringsCanvas.style.top = '-' + this.height*2 + 'px';
+		window.rCxt = ringsCanvas.getContext("2d");
+
+		var viewport = $('viewport');
+		viewport.style.width =  this.viewportWidth + 'px';
+		viewport.style.height = this.viewportHeight + 'px';
 
 		this.initLevelObjects();
 		this.drawLevel();
 
-		this.ball = new BounceBall(125,218,12,this);
+		this.ball = new BounceBall( 40, 40, 16, this);
 
 		this.animate();		
 	}
